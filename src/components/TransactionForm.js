@@ -4,8 +4,8 @@ const TransactionForm = ({ onSubmit, editingTransaction = null }) => {
   const initialFormState = {
     type: 'expense',
     category: 'PDAM',
-    description: '',
     amount: '',
+    description: '',
     date: new Date().toISOString().split('T')[0]
   };
 
@@ -106,20 +106,6 @@ const TransactionForm = ({ onSubmit, editingTransaction = null }) => {
 
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2">
-            Keterangan
-          </label>
-          <input
-            type="text"
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            className="w-full p-2 border rounded-md"
-            placeholder="Tambahkan keterangan..."
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">
             Jumlah (Rp)
           </label>
           <div className="relative">
@@ -134,6 +120,20 @@ const TransactionForm = ({ onSubmit, editingTransaction = null }) => {
               placeholder="0"
             />
           </div>
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2">
+            Keterangan
+          </label>
+          <input
+            type="text"
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            className="w-full p-2 border rounded-md"
+            placeholder="Tambahkan keterangan..."
+          />
         </div>
 
         <div className="mb-4">
