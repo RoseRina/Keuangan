@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import TransactionForm from './components/TransactionForm';
 import TransactionList from './components/TransactionList';
 import Summary from './components/Summary';
+import MonthlyAnalysis from './components/MonthlyAnalysis';
 import { initDB, addTransaction as addToDB, getAllTransactions, deleteTransaction as deleteFromDB } from './utils/db';
 
 function App() {
@@ -34,7 +35,7 @@ function App() {
         <h1 className="text-3xl font-bold text-center text-gray-800 mb-8">
           Manajemen Keuangan
         </h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           <div>
             <TransactionForm onSubmit={addTransaction} />
           </div>
@@ -42,11 +43,16 @@ function App() {
             <Summary transactions={transactions} />
           </div>
         </div>
-        <div className="mt-8">
-          <TransactionList 
-            transactions={transactions} 
-            onDelete={deleteTransaction}
-          />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div>
+            <TransactionList 
+              transactions={transactions} 
+              onDelete={deleteTransaction}
+            />
+          </div>
+          <div>
+            <MonthlyAnalysis transactions={transactions} />
+          </div>
         </div>
       </div>
     </div>
