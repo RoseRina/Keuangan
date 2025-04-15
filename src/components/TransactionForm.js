@@ -14,6 +14,26 @@ const TransactionForm = ({ onSubmit }) => {
     income: ['Gaji', 'Bonus', 'Lainnya']
   };
 
+  const formatRupiah = (angka) => {
+    if (!angka) return '';
+    // Hapus semua karakter non-digit
+    const number = angka.toString().replace(/\D/g, '');
+    // Format dengan pemisah ribuan
+    return number.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  };
+
+  const handleAmountChange = (e) => {
+    const value = e.target.value;
+    // Hapus semua karakter non-digit
+    const numericValue = value.replace(/\D/g, '');
+    
+    setFormData(prev => ({
+      ...prev,
+      // Simpan nilai numerik asli
+      amount: numericValue
+    }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit({
@@ -74,14 +94,18 @@ const TransactionForm = ({ onSubmit }) => {
           <label className="block text-gray-700 text-sm font-bold mb-2">
             Jumlah (Rp)
           </label>
-          <input
-            type="number"
-            name="amount"
-            value={formData.amount}
-            onChange={handleChange}
-            className="w-full p-2 border rounded-md"
-            required
-          />
+          <div className="relative">
+            <span className="absolute left-3 top-2 text-gray-600">Rp</span>
+            <input
+              type="text"
+              name="amount"
+              value={formatRupiah(formData.amount)}
+              onChange={handleAmountChange}
+              className="w-full p-2 pl-12 border rounded-md"
+              required
+              placeholder="0"
+            />
+          </div>
         </div>
 
         <div className="mb-4">
