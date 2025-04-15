@@ -1,13 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const TransactionForm = ({ onSubmit }) => {
-  const [formData, setFormData] = useState({
+const TransactionForm = ({ onSubmit, editingTransaction = null }) => {
+  const initialFormState = {
     type: 'expense',
     category: 'PDAM',
     amount: '',
     description: '',
     date: new Date().toISOString().split('T')[0]
-  });
+  };
+
+  const [formData, setFormData] = useState(initialFormState);
+
+  // Effect untuk mengisi form ketika ada transaksi yang diedit
+  useEffect(() => {
+    if (editingTransaction) {
+      setFormData({
+        ...editingTransaction,
+        type: editingTransaction.amount < 0 ? 'expense' : 'income',
+        amount: Math.abs(editingTransaction.amount).toString()
+      });
+    }
+  }, [editingTransaction]);
 
   const categories = {
     expense: ['PDAM', 'INDIHOME', 'Lainnya'],
@@ -36,15 +49,13 @@ const TransactionForm = ({ onSubmit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({
+    const submittedData = {
       ...formData,
       amount: formData.type === 'expense' ? -Math.abs(Number(formData.amount)) : Math.abs(Number(formData.amount))
-    });
-    setFormData({
-      ...formData,
-      amount: '',
-      description: ''
-    });
+    };
+
+    onSubmit(submittedData);
+    setFormData(initialFormState); // Reset form setelah submit
   };
 
   const handleChange = (e) => {
@@ -57,7 +68,9 @@ const TransactionForm = ({ onSubmit }) => {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-4">Tambah Transaksi</h2>
+      <h2 className="text-xl font-semibold mb-4">
+        {editingTransaction ? 'Edit Transaksi' : 'Tambah Transaksi'}
+      </h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2">
@@ -136,12 +149,26 @@ const TransactionForm = ({ onSubmit }) => {
           />
         </div>
 
-        <button
-          type="submit"
-          className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors"
-        >
-          Tambah Transaksi
-        </button>
+        <div className="flex space-x-2">
+          <button
+            type="submit"
+            className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors"
+          >
+            {editingTransaction ? 'Simpan Perubahan' : 'Tambah Transaksi'}
+          </button>
+          {editingTransaction && (
+            <button
+              type="button"
+              onClick={() => {
+                setFormData(initialFormState);
+                onSubmit(null); // Membatalkan mode edit
+              }}
+              className="flex-1 bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 transition-colors"
+            >
+              Batal
+            </button>
+          )}
+        </div>
       </form>
     </div>
   );

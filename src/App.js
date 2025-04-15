@@ -3,10 +3,11 @@ import TransactionForm from './components/TransactionForm';
 import TransactionList from './components/TransactionList';
 import Summary from './components/Summary';
 import MonthlyAnalysis from './components/MonthlyAnalysis';
-import { initDB, addTransaction as addToDB, getAllTransactions, deleteTransaction as deleteFromDB } from './utils/db';
+import { initDB, addTransaction as addToDB, getAllTransactions, deleteTransaction as deleteFromDB, updateTransaction } from './utils/db';
 
 function App() {
   const [transactions, setTransactions] = useState([]);
+  const [editingTransaction, setEditingTransaction] = useState(null);
 
   // Inisialisasi dan ambil data saat komponen dimuat
   useEffect(() => {
@@ -18,10 +19,39 @@ function App() {
     loadTransactions();
   }, []);
 
-  const addTransaction = async (transaction) => {
-    const newTransaction = { ...transaction, id: Date.now() };
-    await addToDB(newTransaction);
-    setTransactions([...transactions, newTransaction]);
+  const handleSubmit = async (transaction) => {
+    if (!transaction) {
+      // Jika transaction null, berarti membatalkan edit
+      setEditingTransaction(null);
+      return;
+    }
+
+    if (editingTransaction) {
+      // Mode Edit
+      const updatedTransaction = {
+        ...transaction,
+        id: editingTransaction.id
+      };
+      await updateTransaction(updatedTransaction);
+      setTransactions(transactions.map(t => 
+        t.id === editingTransaction.id ? updatedTransaction : t
+      ));
+      setEditingTransaction(null);
+    } else {
+      // Mode Tambah
+      const newTransaction = { ...transaction, id: Date.now() };
+      await addToDB(newTransaction);
+      setTransactions([...transactions, newTransaction]);
+    }
+  };
+
+  const handleEdit = (transaction) => {
+    setEditingTransaction(transaction);
+    // Scroll ke form
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   };
 
   const deleteTransaction = async (id) => {
@@ -37,7 +67,10 @@ function App() {
         </h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           <div>
-            <TransactionForm onSubmit={addTransaction} />
+            <TransactionForm 
+              onSubmit={handleSubmit}
+              editingTransaction={editingTransaction}
+            />
           </div>
           <div>
             <Summary transactions={transactions} />
@@ -48,6 +81,7 @@ function App() {
             <TransactionList 
               transactions={transactions} 
               onDelete={deleteTransaction}
+              onEdit={handleEdit}
             />
           </div>
           <div>
