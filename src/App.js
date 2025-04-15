@@ -42,12 +42,15 @@ function App() {
       return;
     }
 
+    console.log('Data yang diterima di App:', transaction);
+
     if (editingTransaction) {
       // Mode Edit
       const updatedTransaction = {
         ...transaction,
         id: editingTransaction.id
       };
+      console.log('Data yang akan diupdate:', updatedTransaction);
       await updateTransaction(updatedTransaction);
       setTransactions(transactions.map(t => 
         t.id === editingTransaction.id ? updatedTransaction : t
@@ -56,6 +59,7 @@ function App() {
     } else {
       // Mode Tambah
       const newTransaction = { ...transaction, id: Date.now() };
+      console.log('Data baru yang akan disimpan:', newTransaction);
       await addToDB(newTransaction);
       setTransactions([...transactions, newTransaction]);
     }
