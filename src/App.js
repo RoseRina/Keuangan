@@ -61,22 +61,26 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-8">
+      <div className="container mx-auto px-4 py-6 md:py-8">
+        <h1 className="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-6 md:mb-8">
           Manajemen Keuangan
         </h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-          <div>
+        
+        {/* Form dan Summary */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8 mb-4 md:mb-8">
+          <div className="order-2 lg:order-1">
             <TransactionForm 
               onSubmit={handleSubmit}
               editingTransaction={editingTransaction}
             />
           </div>
-          <div>
+          <div className="order-1 lg:order-2">
             <Summary transactions={transactions} />
           </div>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+        {/* TransactionList dan MonthlyAnalysis */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-8">
           <div>
             <TransactionList 
               transactions={transactions} 
@@ -84,7 +88,7 @@ function App() {
               onEdit={handleEdit}
             />
           </div>
-          <div>
+          <div className="mt-4 xl:mt-0">
             <MonthlyAnalysis transactions={transactions} />
           </div>
         </div>
