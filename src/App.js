@@ -5,7 +5,6 @@ import Summary from './components/Summary';
 import MonthlyAnalysis from './components/MonthlyAnalysis';
 import CategoryManager from './components/CategoryManager';
 import { 
-  initDB, 
   addTransaction as addToDB, 
   getAllTransactions, 
   deleteTransaction as deleteFromDB, 
@@ -13,55 +12,69 @@ import {
   getAllCategories,
   addCategory as addCategoryToDB,
   deleteCategory as deleteCategoryFromDB
-} from './utils/db';
+} from './utils/api';
 
 function App() {
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [showCategoryManager, setShowCategoryManager] = useState(false);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Inisialisasi dan ambil data saat komponen dimuat
   useEffect(() => {
     const loadData = async () => {
-      await initDB();
-      const [transactionsData, categoriesData] = await Promise.all([
-        getAllTransactions(),
-        getAllCategories()
-      ]);
-      setTransactions(transactionsData);
-      setCategories(categoriesData);
+      try {
+        setIsLoading(true);
+        // Ambil data transaksi dan kategori
+        const [transactionsData, categoriesData] = await Promise.all([
+          getAllTransactions(),
+          getAllCategories()
+        ]);
+        
+        setTransactions(transactionsData);
+        setCategories(categoriesData);
+        setError(null);
+      } catch (err) {
+        console.error('Error loading data:', err);
+        setError('Gagal memuat data. Silakan coba lagi.');
+      } finally {
+        setIsLoading(false);
+      }
     };
+    
     loadData();
   }, []);
 
   const handleSubmit = async (transaction) => {
-    if (!transaction) {
-      // Jika transaction null, berarti membatalkan edit
-      setEditingTransaction(null);
-      return;
-    }
+    try {
+      if (!transaction) {
+        // Jika transaction null, berarti membatalkan edit
+        setEditingTransaction(null);
+        return;
+      }
 
-    console.log('Data yang diterima di App:', transaction);
-
-    if (editingTransaction) {
-      // Mode Edit
-      const updatedTransaction = {
-        ...transaction,
-        id: editingTransaction.id
-      };
-      console.log('Data yang akan diupdate:', updatedTransaction);
-      await updateTransaction(updatedTransaction);
-      setTransactions(transactions.map(t => 
-        t.id === editingTransaction.id ? updatedTransaction : t
-      ));
-      setEditingTransaction(null);
-    } else {
-      // Mode Tambah
-      const newTransaction = { ...transaction, id: Date.now() };
-      console.log('Data baru yang akan disimpan:', newTransaction);
-      await addToDB(newTransaction);
-      setTransactions([...transactions, newTransaction]);
+      if (editingTransaction) {
+        // Mode Edit
+        const updatedTransaction = {
+          ...transaction,
+          id: editingTransaction.id
+        };
+        const result = await updateTransaction(updatedTransaction);
+        setTransactions(transactions.map(t => 
+          t.id === editingTransaction.id ? result : t
+        ));
+        setEditingTransaction(null);
+      } else {
+        // Mode Tambah
+        const newTransaction = await addToDB(transaction);
+        setTransactions([...transactions, newTransaction]);
+      }
+      setError(null);
+    } catch (err) {
+      console.error('Error handling transaction:', err);
+      setError('Gagal menyimpan transaksi. Silakan coba lagi.');
     }
   };
 
@@ -75,19 +88,52 @@ function App() {
   };
 
   const deleteTransaction = async (id) => {
-    await deleteFromDB(id);
-    setTransactions(transactions.filter(transaction => transaction.id !== id));
+    try {
+      await deleteFromDB(id);
+      setTransactions(transactions.filter(transaction => transaction.id !== id));
+      setError(null);
+    } catch (err) {
+      console.error('Error deleting transaction:', err);
+      setError('Gagal menghapus transaksi. Silakan coba lagi.');
+    }
   };
 
   const addCategory = async (category) => {
-    const newCategory = await addCategoryToDB(category);
-    setCategories([...categories, newCategory]);
+    try {
+      const newCategory = await addCategoryToDB(category);
+      setCategories([...categories, newCategory]);
+      setError(null);
+    } catch (err) {
+      console.error('Error adding category:', err);
+      setError('Gagal menambah kategori. Silakan coba lagi.');
+    }
   };
 
   const deleteCategory = async (id) => {
-    await deleteCategoryFromDB(id);
-    setCategories(categories.filter(category => category.id !== id));
+    try {
+      await deleteCategoryFromDB(id);
+      setCategories(categories.filter(category => category.id !== id));
+      setError(null);
+    } catch (err) {
+      console.error('Error deleting category:', err);
+      if (err.message === 'Kategori ini masih digunakan dalam transaksi') {
+        setError('Tidak dapat menghapus kategori yang masih digunakan dalam transaksi.');
+      } else {
+        setError('Gagal menghapus kategori. Silakan coba lagi.');
+      }
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Memuat data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -95,6 +141,12 @@ function App() {
         <h1 className="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-6 md:mb-8">
           Manajemen Keuangan
         </h1>
+
+        {error && (
+          <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+            {error}
+          </div>
+        )}
         
         {/* Form dan Summary */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8 mb-4 md:mb-8">

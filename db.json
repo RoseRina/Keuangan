@@ -1,0 +1,10 @@
+{
+  "transactions": [],
+  "categories": [
+    { "id": 1, "name": "PDAM", "type": "expense" },
+    { "id": 2, "name": "INDIHOME", "type": "expense" },
+    { "id": 3, "name": "Gaji", "type": "income" },
+    { "id": 4, "name": "Bonus", "type": "income" },
+    { "id": 5, "name": "Lainnya", "type": "both" }
+  ]
+} 
