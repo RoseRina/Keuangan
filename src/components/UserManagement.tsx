@@ -123,15 +123,31 @@ const UserManagement: React.FC<UserManagementProps> = ({ onClose }) => {
     setShowAddForm(true);
   };
 
-  const handleDelete = (userId: string) => {
-    if (window.confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) {
+  const handleDelete = (userId: string, username: string) => {
+    // Prevent deletion of the main admin account
+    if (username === 'admin') {
+      setError('Akun admin utama tidak dapat dihapus!');
+      return;
+    }
+
+    if (window.confirm('Apakah Anda yakin ingin menghapus pengguna ini? Semua data transaksi pengguna akan ikut terhapus.')) {
+      // Delete user's transactions
+      localStorage.removeItem(`transactions_${userId}`);
+      
+      // Delete user
       const updatedUsers = users.filter(user => user.id !== userId);
       saveUsers(updatedUsers);
-      setSuccess('Pengguna berhasil dihapus!');
+      setSuccess('Pengguna dan semua data transaksinya berhasil dihapus!');
     }
   };
 
-  const toggleUserStatus = (userId: string) => {
+  const toggleUserStatus = (userId: string, username: string) => {
+    // Prevent deactivating the main admin account
+    if (username === 'admin') {
+      setError('Status akun admin utama tidak dapat diubah!');
+      return;
+    }
+
     const updatedUsers = users.map(user => 
       user.id === userId 
         ? { ...user, isActive: !user.isActive }
@@ -389,12 +405,13 @@ const UserManagement: React.FC<UserManagementProps> = ({ onClose }) => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <button
-                          onClick={() => toggleUserStatus(user.id)}
+                          onClick={() => toggleUserStatus(user.id, user.username)}
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors duration-200 ${
                             user.isActive
                               ? 'bg-green-100 text-green-800 hover:bg-green-200'
                               : 'bg-red-100 text-red-800 hover:bg-red-200'
-                          }`}
+                          } ${user.username === 'admin' ? 'cursor-not-allowed opacity-50' : ''}`}
+                          disabled={user.username === 'admin'}
                         >
                           {user.isActive ? (
                             <>
@@ -424,15 +441,16 @@ const UserManagement: React.FC<UserManagementProps> = ({ onClose }) => {
                           >
                             <Edit3 className="w-4 h-4" />
                           </button>
-                          {user.username !== 'admin' && (
-                            <button
-                              onClick={() => handleDelete(user.id)}
-                              className="text-red-600 hover:text-red-900 transition-colors duration-200"
-                              title="Hapus pengguna"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
+                          <button
+                            onClick={() => handleDelete(user.id, user.username)}
+                            className={`text-red-600 hover:text-red-900 transition-colors duration-200 ${
+                              user.username === 'admin' ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                            title={user.username === 'admin' ? 'Admin utama tidak dapat dihapus' : 'Hapus pengguna'}
+                            disabled={user.username === 'admin'}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       </td>
                     </tr>

@@ -166,15 +166,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onShowRegister }) => {
               </button>
             </p>
           </div>
-
-          {/* Login Info */}
-          <div className="mt-6 p-4 bg-blue-500/20 rounded-xl border border-blue-400/30">
-            <p className="text-blue-200 text-sm text-center">
-              <strong>Info Login Admin:</strong><br />
-              Username: <code className="bg-white/20 px-2 py-1 rounded">admin</code><br />
-              Password: <code className="bg-white/20 px-2 py-1 rounded">admin</code>
-            </p>
-          </div>
         </div>
 
         {/* Footer */}
